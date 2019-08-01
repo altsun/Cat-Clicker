@@ -1,13 +1,16 @@
 // Model of the cats
 model = {
     catData: [
-        // Cat name, Number of clicks of cat
-        ["Cute Cat", 0],            // 0
-        ["Hiding Cat", 0],          // 1
-        ["Five Cats", 0],           // 2
-        ["Green-eyed Cat", 0],      // 3
-        ["Cat and Butterfly", 0],   // 4
-        ["Cat Twins", 0],           // 5
+        // Cat name, Number of clicks of cat, Nicknames
+        // Cat name: string
+        // Number of clicks of cat: integer
+        // Nicknames: array of string
+        ["Cute Cat", 0, ["Cutie", "Little"] ],
+        ["Hiding Cat", 0, ["Shadow", "Phantom"] ],
+        ["Five Cats", 0, ["Five Cats on grass"] ],
+        ["Green-eyed Cat", 0, ["Emerald"] ],
+        ["Cat and Butterfly", 0, ["Hunter", "Jumper"] ],
+        ["Cat Twins", 0, ["Sleeping Beauties"] ],
     ],
 
     currentCatId: null,
@@ -75,7 +78,11 @@ let octopus = {
 
     getCatDataLength: function() {
         return model.catData.length;
-    }
+    },
+
+    getCatNicknames: function(id) {
+        return model.catData[id][2];
+    },
 }
 
 // View of Cat list
@@ -143,7 +150,9 @@ let viewCatDisplayArea = {
         viewCatDisplayArea.displayingCatImage = true;
 
         // Clear all
-        catDisplayArea.innerHTML = "";
+        while (catDisplayArea.lastChild) {
+            catDisplayArea.removeChild(catDisplayArea.lastChild);
+        }
 
         let catName = octopus.getCatName(i);
 
@@ -166,7 +175,24 @@ let viewCatDisplayArea = {
         numClick.innerHTML = `Number of clicks: <span class="num-click">${clicks}</span>`;
         fragment.appendChild(numClick);
 
+        // Create nicknames
+        let nicknamesHeading = document.createElement("h4");
+        nicknamesHeading.textContent = "Cat's nicknames";
+        fragment.appendChild(nicknamesHeading);
+        let nicknamesList = document.createElement("ul");
+        nicknamesList.id = "nicknames-list";
+        nicknamesList.setAttribute("data-bind", "foreach: nicknames")
+        let nicknamesListItem = document.createElement("li");
+        nicknamesListItem.setAttribute("data-bind", "text: $data")
+        nicknamesList.appendChild(nicknamesListItem);
+        fragment.appendChild(nicknamesList);
+
         catDisplayArea.appendChild(fragment)
+
+        // Apply binding for cat's nicknames
+        ko.applyBindings({
+            nicknames: octopus.getCatNicknames(i),
+        }, document.getElementById("nicknames-list"));
     },
 
     handleClick: function () {
