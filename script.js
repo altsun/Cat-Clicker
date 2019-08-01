@@ -5,12 +5,12 @@ model = {
         // Cat name: string
         // Number of clicks of cat: integer
         // Nicknames: array of string
-        ["Cute Cat", 0, ["Cutie", "Little"] ],
+        ["Cute Cat", 0, ["Cutie", "Little", "CC"] ],
         ["Hiding Cat", 0, ["Shadow", "Phantom"] ],
-        ["Five Cats", 0, ["Five Cats on grass"] ],
-        ["Green-eyed Cat", 0, ["Emerald"] ],
-        ["Cat and Butterfly", 0, ["Hunter", "Jumper"] ],
-        ["Cat Twins", 0, ["Sleeping Beauties"] ],
+        ["Five Cats", 0, ["Five Cats on grass", "Cat Pack"] ],
+        ["Green-eyed Cat", 0, ["Emerald", "Greeny"] ],
+        ["Cat and Butterfly", 0, ["Hunter", "Jumper", "Leaper"] ],
+        ["Cat Twins", 0, ["Sleeping Beauties", "Twins"] ],
     ],
 
     currentCatId: null,
@@ -177,7 +177,7 @@ let viewCatDisplayArea = {
 
         // Create nicknames
         let nicknamesHeading = document.createElement("h4");
-        nicknamesHeading.textContent = "Cat's nicknames";
+        nicknamesHeading.textContent = "Cat's nicknames:";
         fragment.appendChild(nicknamesHeading);
         let nicknamesList = document.createElement("ul");
         nicknamesList.id = "nicknames-list";
