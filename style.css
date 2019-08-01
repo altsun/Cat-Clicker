@@ -1,0 +1,16 @@
+.cat-image {
+    width: 100%;
+}
+
+.cat-list-item {
+    cursor: pointer;
+    margin: 0.5em;
+}
+
+.cat-list-item:hover {
+    font-style: oblique;
+}
+
+.button-container-center {
+    text-align: center;
+}
