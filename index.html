@@ -18,27 +18,48 @@
     <div class="row">
         <div class="col-md-4">
             <h3>Choose your cat</h3>
-            <ul id="cat-list">
-                <!-- Render by script.js -->
+            <ul id="cat-list" data-bind="foreach: catData()">
+                <li class="cat-list-item" data-bind="attr: { id: 'cat-' + $index() }, text: name, click: $parent.setCurrentCatId"></li>
             </ul>
         </div>
     
         <div class="col-md-8" id="cat-display-area">
-            <!-- Render by script.js -->
+            <h3 data-bind="text: currentCatName()">
+                Cat's name
+            </h3>
+            <img class="cat-image" data-bind="attr: { src: 'images/cat' + currentCatId() + '.jpg' }, click: increaseCatClicks">
+            <h4>
+                Number of clicks: <span class="num-click" data-bind="text: currentCatClicks()">Clicks</span>
+            </h4>
+            <h4>Cat's nicknames:</h4>
+            <ul data-bind="foreach: currentCatNicknames()">
+                <li data-bind="text: $data">Nickname</li>
+            </ul>
         </div>
 
         <div class="col-md-8 offset-md-4">
             <div class="button-container-center">
-                <button class="btn btn-primary m-1 text-center" id="admin-button">Admin</button>
+                <button class="btn btn-primary m-1" id="admin-button" data-bind="click: handleClickAdmin">
+                    Admin
+                </button>
             </div>
             <div id="admin-area">
-                <!-- Render by script.js -->
+                <!-- <label class="font-weight-bold">Cat's name:</label>
+                <input type="text" class="form-control" required data-bind="attr: { value: currentCatName() }">
+                <label class="font-weight-bold">Cat's number of clicks:</label>
+                <input type="number" class="form-control" required min="0" data-bind="attr: { value: currentCatClicks() }">
+                <button class="btn btn-secondary m-2" data-bind="click: turnOffAdminArea">Cancel</button>
+                <button class="btn btn-success m-2" data-bind="click: turnOffAdminArea">Save</button> -->
             </div>
         </div>
     </div>
 
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
     <!-- Knockout -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.5.0/knockout-min.js"></script>
+
     <script src="script.js"></script>
 </body>
 </html>

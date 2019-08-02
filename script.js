@@ -5,244 +5,91 @@ model = {
         // Cat name: string
         // Number of clicks of cat: integer
         // Nicknames: array of string
-        ["Cute Cat", 0, ["Cutie", "Little", "CC"] ],
-        ["Hiding Cat", 0, ["Shadow", "Phantom"] ],
-        ["Five Cats", 0, ["Five Cats on grass", "Cat Pack"] ],
-        ["Green-eyed Cat", 0, ["Emerald", "Greeny"] ],
-        ["Cat and Butterfly", 0, ["Hunter", "Jumper", "Leaper"] ],
-        ["Cat Twins", 0, ["Sleeping Beauties", "Twins"] ],
+        { name: "Cute Cat", clicks: 0, nicknames: ["Cutie", "Little", "CC"] },
+        { name: "Hiding Cat", clicks: 0, nicknames: ["Shadow", "Phantom"] },
+        { name: "Five Cats", clicks: 0, nicknames: ["Five Cats on grass", "Cat Pack"] },
+        { name: "Green-eyed Cat", clicks: 0, nicknames: ["Emerald", "Greeny"] },
+        { name: "Cat and Butterfly", clicks: 0, nicknames: ["Hunter", "Jumper", "Leaper"] },
+        { name: "Cat Twins", clicks: 0, nicknames: ["Sleeping Beauties", "Twins"] },
     ],
-
-    currentCatId: null,
-
-    increaseCatClicks: function(i) {
-        model.catData[i][1] += 1
-    },
-
-    setCurrentCatId: function(id) {
-        model.currentCatId = id;
-    },
-
-    setCatName: function(id, name) {
-        model.catData[id][0] = name;
-    },
-
-    setCatClicks: function(id, clicks) {
-        model.catData[id][1] = parseInt(clicks);
-    },
 }
 
-// Dom elements
-let catList = document.getElementById("cat-list");
-let catDisplayArea = document.getElementById("cat-display-area");
-let adminArea = document.getElementById("admin-area");
+function Cat(id) {
+    // Create new cat from model.catData
+    let self = this;
 
-// Octopus
-let octopus = {
-    init: function() {
-        // Initialize views
-        viewCatList.init();
-        viewCatDisplayArea.init();
-        viewAdmin.init();
-    },
-
-    getCurrentCatId: function() {
-        return model.currentCatId;
-    },
-
-    setCurrentCatId: function(id) {
-        model.setCurrentCatId(id);
-    },
-
-    getCatName: function (i) {
-        let catName = model.catData[i][0];
-        return catName;
-    },
-
-    setCatName: function(id, name) {
-        model.setCatName(id, name);
-    },
-
-    getCatClicks: function(i) {
-        let clicks = model.catData[i][1];
-        return clicks;
-    },
-
-    setCatClicks: function(id, clicks) {
-        model.setCatClicks(id, clicks);
-    },
-
-    increaseCatClicks: function(i) {
-        model.increaseCatClicks(i);
-    },
-
-    getCatDataLength: function() {
-        return model.catData.length;
-    },
-
-    getCatNicknames: function(id) {
-        return model.catData[id][2];
-    },
+    self.name = ko.observable(model.catData[id].name);
+    self.clicks = ko.observable(model.catData[id].clicks);
+    self.nicknames = ko.observable(model.catData[id].nicknames);
 }
 
-// View of Cat list
-let viewCatList = {
-    init: function () {
-        viewCatList.renderCatList();
-        viewCatList.handleClick();
-    },
+function AppViewModel() {
+    let self = this;
 
-    renderCatList: function () {
-        // Clear all
-        catList.innerHTML = "";
+    // Create catData
+    self.catData = ko.observableArray();
+    for (let i = 0; i < model.catData.length; ++i) {
+        self.catData.push(new Cat(i));
+    }
 
-        // Add items into cat-list
-        let fragment = document.createDocumentFragment();  // Document fragment to reduce reflow and repaint
-        let catDataLength = octopus.getCatDataLength();
-        for (let i = 0; i < catDataLength; ++i) {
-            let catName = octopus.getCatName(i);
-            let catListItem = document.createElement("li");
-            catListItem.textContent = catName;
-            catListItem.className = "cat-list-item";
-            catListItem.id = "cat-" + i;
-            fragment.appendChild(catListItem);
+    // Get current cat's properties
+    self.currentCatId = ko.observable(0);
+    self.currentCatName = ko.pureComputed(function() {
+        return self.catData()[self.currentCatId()].name;
+    }, self);
+    self.currentCatClicks = ko.pureComputed(function() {
+        return self.catData()[self.currentCatId()].clicks;
+    }, self);
+    self.currentCatNicknames = ko.pureComputed(function() {
+        return self.catData()[self.currentCatId()].nicknames;
+    }, self);
+
+    // Handle click on cat list item
+    self.setCurrentCatId = function(data, event) {
+        let listItem = event.target;
+        let id = listItem.id[listItem.id.length - 1];
+        self.currentCatId(parseInt(id));
+
+        if (viewAdmin.on) {
+            viewAdmin.renderTurnOn();
         }
-        catList.appendChild(fragment);
-    },
+    };
 
-    // Handle click on cat-list-item
-    handleClick: function() {
-        let fragment = document.createDocumentFragment();  // Document fragment to reduce reflow and repaint
-        catList.addEventListener("click", function (event) {
-            let target = event.target;
-            if (target.tagName === "LI") {
-                let i = target.id[target.id.length - 1];  // i is the last letter of target's id
-                // Example: target's id is "cat-3" then i = 3
+    // Handle click on cat's image
+    self.increaseCatClicks = function() {
+        let clicks = self.catData()[self.currentCatId()].clicks;
+        clicks(parseInt(clicks()) + 1);
 
-                octopus.setCurrentCatId(i);
-
-                viewCatDisplayArea.renderCatImage(i, fragment);  // Call other view
-                if (viewAdmin.on) {
-                    // Re-render view of admin area
-                    viewAdmin.renderTurnOn();  // Call other view
-                }
-            }
-        });
-    },
-}
-
-// View of Cat display area
-let viewCatDisplayArea = {
-    init: function() {
-        viewCatDisplayArea.displayingCatImage = false;
-
-        viewCatDisplayArea.handleClick();
-    },
-
-    renderNumberOfClicks: function(i) {
-        let numClick = catDisplayArea.querySelector(".num-click");
-        octopus.increaseCatClicks(i);
-        clicks = octopus.getCatClicks(i);
-        numClick.textContent = clicks;
-    },
-
-    renderCatImage: function (i, fragment) {
-        viewCatDisplayArea.displayingCatImage = true;
-
-        // Clear all
-        while (catDisplayArea.lastChild) {
-            catDisplayArea.removeChild(catDisplayArea.lastChild);
+        if (viewAdmin.on) {
+            viewAdmin.renderTurnOn();
         }
+    };
 
-        let catName = octopus.getCatName(i);
+    // Admin button
+    self.handleClickAdmin = function() {
+        viewAdmin.renderTurnOn();
+    };
+};
 
-        // Create h3 that contain cat name
-        let nameContainer = document.createElement("h3");
-        nameContainer.textContent = catName;
-        fragment.appendChild(nameContainer);
-
-        // Create cat image
-        let catImage = document.createElement("img");
-        catImage.className = "cat-image";
-        catImage.id = "cat-image-" + i;
-        catImage.src = `images/cat${i}.jpg`;
-        catImage.alt = catName + " Image";
-        fragment.appendChild(catImage);
-
-        // Create number of clicks
-        let numClick = document.createElement("h4");
-        let clicks = octopus.getCatClicks(i);
-        numClick.innerHTML = `Number of clicks: <span class="num-click">${clicks}</span>`;
-        fragment.appendChild(numClick);
-
-        // Create nicknames
-        let nicknamesHeading = document.createElement("h4");
-        nicknamesHeading.textContent = "Cat's nicknames:";
-        fragment.appendChild(nicknamesHeading);
-        let nicknamesList = document.createElement("ul");
-        nicknamesList.id = "nicknames-list";
-        nicknamesList.setAttribute("data-bind", "foreach: nicknames")
-        let nicknamesListItem = document.createElement("li");
-        nicknamesListItem.setAttribute("data-bind", "text: $data")
-        nicknamesList.appendChild(nicknamesListItem);
-        fragment.appendChild(nicknamesList);
-
-        catDisplayArea.appendChild(fragment)
-
-        // Apply binding for cat's nicknames
-        ko.applyBindings({
-            nicknames: octopus.getCatNicknames(i),
-        }, document.getElementById("nicknames-list"));
-    },
-
-    handleClick: function () {
-        // Handle click on cat-image
-        catDisplayArea.addEventListener("click", function (event) {
-            let target = event.target;
-            if (target.className === "cat-image") {
-                let i = octopus.getCurrentCatId();
-
-                viewCatDisplayArea.renderNumberOfClicks(i);
-
-                if (viewAdmin.on) {
-                    // Re-render view of admin area
-                    viewAdmin.renderTurnOn();  // Call other view
-                }
-            }
-        });
-    },
-}
+let vm = new AppViewModel()
+ko.applyBindings(vm);
 
 // View of Admin area
 let viewAdmin = {
-    init: function() {
-        viewAdmin.adminButton = document.getElementById("admin-button");
-        viewAdmin.on = false;
-
-        viewAdmin.handleClickAdmin();
-    },
+    adminButton: document.getElementById("admin-button"),
+    adminArea: document.getElementById("admin-area"),
+    on: false,
 
     renderTurnOn: function () {
-        if (! viewCatDisplayArea.displayingCatImage) {
-            return;
-        }
-
         viewAdmin.on = true;
 
         // Clear all
-        adminArea.innerHTML = "";
+        viewAdmin.adminArea.innerHTML = "";
 
-        i = octopus.getCurrentCatId();
-        if (i == null) {
-            return;
-        }
-        
-        let catName = octopus.getCatName(i);
-        let catClicks = octopus.getCatClicks(i);
+        let catName = vm.catData()[vm.currentCatId()].name();
+        let catClicks = vm.catData()[vm.currentCatId()].clicks();
 
         let fragment = document.createDocumentFragment();
-
-        let form = document.createElement("form");
 
         // Input cat name
         let labelCatName = document.createElement("label");
@@ -253,92 +100,62 @@ let viewAdmin = {
         inputCatName.className = "form-control";
         inputCatName.id = "input-cat-name";
         inputCatName.value = catName;
-        form.appendChild(labelCatName);
-        form.appendChild(inputCatName);
+        fragment.appendChild(labelCatName);
+        fragment.appendChild(inputCatName);
 
         // Input cat image
         let labelCatClicks = document.createElement("label");
         labelCatClicks.className = "font-weight-bold";
         labelCatClicks.textContent = "Cat's number of clicks:";
         let inputCatClicks = document.createElement("input");
-        inputCatClicks.type = "text";
+        inputCatClicks.type = "number";
         inputCatClicks.className = "form-control";
         inputCatClicks.id = "input-cat-clicks";
+        inputCatClicks.min = "0";
         inputCatClicks.value = catClicks;
-        form.appendChild(labelCatClicks);
-        form.appendChild(inputCatClicks);
+        fragment.appendChild(labelCatClicks);
+        fragment.appendChild(inputCatClicks);
 
         // Cancel button
         let cancelButton = document.createElement("button");
         cancelButton.className = "btn btn-secondary m-2";
         cancelButton.id = "cancel-button";
         cancelButton.textContent = "Cancel";
-        form.appendChild(cancelButton);
-
-        fragment.appendChild(form);
-
-        adminArea.appendChild(fragment);
+        fragment.appendChild(cancelButton);
 
         // Save button
         let saveButton = document.createElement("button");
         saveButton.className = "btn btn-success m-2";
         saveButton.id = "save-button";
         saveButton.textContent = "Save";
-        form.appendChild(saveButton);
+        fragment.appendChild(saveButton);
 
-        fragment.appendChild(form);
+        viewAdmin.adminArea.appendChild(fragment);
 
-        adminArea.appendChild(fragment);
-
-        // Update value for buttons
-        viewAdmin.cancelButton = document.getElementById("cancel-button");
-        viewAdmin.saveButton = document.getElementById("save-button");
-
-        viewAdmin.handleClickCancel();
-        viewAdmin.handleClickSave();
+        // Add data-bind for buttons
+        $("#cancel-button").attr("onclick", "viewAdmin.renderTurnOff()");
+        $("#save-button").attr("onclick", "viewAdmin.save()");
     },
 
     renderTurnOff: function() {
         viewAdmin.on = false;
 
         // Clear all
-        adminArea.innerHTML = "";
+        viewAdmin.adminArea.innerHTML = "";
     },
 
-    handleClickAdmin: function() {
-        viewAdmin.adminButton.addEventListener("click", function() {
-            viewAdmin.renderTurnOn();
-        });
-    },
+    save: function() {
+        // Get data from the form
+        let inputCatName = document.getElementById("input-cat-name");
+        let inputCatClicks = document.getElementById("input-cat-clicks");
+        let catName = inputCatName.value;
+        let catClicks = inputCatClicks.value;
 
-    handleClickCancel: function() {
-        viewAdmin.cancelButton.addEventListener("click", function() {
-            viewAdmin.renderTurnOff();
-        });
-    },
+        vm.catData()[vm.currentCatId()].name(catName);
+        vm.catData()[vm.currentCatId()].clicks(catClicks);
 
-    handleClickSave: function() {
-        viewAdmin.saveButton.addEventListener("click", function() {
-            // Get data form the form
-            let inputCatName = document.getElementById("input-cat-name");
-            let inputCatClicks = document.getElementById("input-cat-clicks");
-            let catName = inputCatName.value;
-            let catClicks = inputCatClicks.value;
+        console.log(vm.catData()[vm.currentCatId()].clicks());
 
-            // Get currentCatId
-            let i = octopus.getCurrentCatId();
-
-            // Send data to octopus and make the changes for the model
-            octopus.setCatName(i, catName);
-            octopus.setCatClicks(i, catClicks);
-
-            viewAdmin.renderTurnOff();
-            viewCatList.renderCatList();
-            let fragment = document.createDocumentFragment();
-            viewCatDisplayArea.renderCatImage(i, fragment);
-        });
+        viewAdmin.renderTurnOff();
     },
 }
-
-// Main
-octopus.init();
