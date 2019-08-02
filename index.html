@@ -27,6 +27,9 @@
             <h3 data-bind="text: currentCatName()">
                 Cat's name
             </h3>
+            <h5 data-bind="text: currentCatTitle()">
+                Cat's title
+            </h5>
             <img class="cat-image" data-bind="attr: { src: 'images/cat' + currentCatId() + '.jpg' }, click: increaseCatClicks">
             <h4>
                 Number of clicks: <span class="num-click" data-bind="text: currentCatClicks()">Clicks</span>

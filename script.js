@@ -21,6 +21,27 @@ function Cat(id) {
     self.name = ko.observable(model.catData[id].name);
     self.clicks = ko.observable(model.catData[id].clicks);
     self.nicknames = ko.observable(model.catData[id].nicknames);
+    self.title = ko.computed(function() {
+        let clicks = parseInt(self.clicks());
+        if (clicks < 10) {
+            return "Newborn";
+        }
+        else if (clicks < 20) {
+            return "Infant";
+        }
+        else if (clicks < 50) {
+            return "Kitty";
+        }
+        else if (clicks < 100) {
+            return "Young Cat";
+        }
+        else if (clicks < 200) {
+            return "Adult Cat";
+        }
+        else {
+            return "Fox";
+        }
+    }, self)
 }
 
 function AppViewModel() {
@@ -42,6 +63,9 @@ function AppViewModel() {
     }, self);
     self.currentCatNicknames = ko.pureComputed(function() {
         return self.catData()[self.currentCatId()].nicknames;
+    }, self);
+    self.currentCatTitle = ko.pureComputed(function() {
+        return self.catData()[self.currentCatId()].title;
     }, self);
 
     // Handle click on cat list item
@@ -153,8 +177,6 @@ let viewAdmin = {
 
         vm.catData()[vm.currentCatId()].name(catName);
         vm.catData()[vm.currentCatId()].clicks(catClicks);
-
-        console.log(vm.catData()[vm.currentCatId()].clicks());
 
         viewAdmin.renderTurnOff();
     },
